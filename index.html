@@ -32,8 +32,10 @@ label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
 .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .row small{display:block;color:var(--muted);font-size:.78rem}
 .row b{white-space:nowrap}
-.total{background:var(--total);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;font-size:1.15rem;margin-top:8px}
-.total b{font-size:1.5rem}
+.total{background:var(--total);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:1.15rem;margin-top:8px}
+.tw{display:flex;align-items:center;gap:4px;flex:1;justify-content:flex-end}
+.tw input{width:100%;max-width:170px;min-width:0;border:0;border-bottom:2px solid var(--accent);background:transparent;color:var(--text);font:inherit;font-size:1.5rem;font-weight:700;text-align:right;outline:none;padding:2px 0}
+.tw b{font-size:1.5rem}
 .hint{color:var(--muted);font-size:.8rem;margin:10px 2px 0}
 .hint a{color:var(--accent)}
 </style>
@@ -79,18 +81,20 @@ label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
 <div class="row"><div>Frais de gestion et de mise à disposition<small>30 € par véhicule</small></div><b id="r-gestion">—</b></div>
 <div class="row"><div>Frais de vente (TTC)<small id="s-vente">15 %, minimum 360 €</small></div><b id="r-vente">—</b></div>
 <div class="row" id="row-cg" hidden><div>Carte grise<small id="s-cg"></small></div><b id="r-cg">—</b></div>
-<div class="total"><span>Total à prévoir</span><b id="r-total">—</b></div>
+<div class="total"><span>Total à prévoir</span><div class="tw"><input id="total" type="text" inputmode="decimal" placeholder="0" autocomplete="off" aria-label="Total à prévoir"><b>€</b></div></div>
+<p class="hint">Tu peux aussi saisir le total : le prix d’adjudication se recalcule automatiquement.</p>
 <p class="hint">Adjudication jusqu’à 2 400 € : 360 € de frais de vente. Au-delà de 2 400 € : 15 % du prix d’adjudication.</p>
 <p class="hint" id="h-cg" hidden>Carte grise : estimation pour un véhicule d’occasion, hors malus CO₂ et taxe parafiscale. Tarifs du cheval fiscal 2026. Véhicule de 10 ans ou plus : taxe régionale divisée par deux.</p>
-<p class="hint">Simulation non contractuelle. Une question ? <a href="tel:+33442840738">(+33) 4 42 84 07 38</a></p>
 </div>
 </main>
 
 <script>
 (function(){
 var $=function(id){return document.getElementById(id)};
-var type="part", age="new";
+var type="part", age="new", mode="prix";
 var eur=function(n){return n.toLocaleString("fr-FR",{style:"currency",currency:"EUR"})};
+var num=function(v){return parseFloat(String(v).replace(/\s/g,"").replace(",","."))||0};
+var fmt=function(n,min){return n.toLocaleString("fr-FR",{minimumFractionDigits:min,maximumFractionDigits:2,useGrouping:false})};
 
 var R=[
 ["Auvergne-Rhône-Alpes",43,"01 Ain|03 Allier|07 Ardèche|15 Cantal|26 Drôme|38 Isère|42 Loire|43 Haute-Loire|63 Puy-de-Dôme|69 Rhône|73 Savoie|74 Haute-Savoie"],
@@ -128,7 +132,6 @@ D.forEach(function(d){
 sel.value="13";
 
 function render(){
-  var p=parseFloat(String($("prix").value).replace(/\s/g,"").replace(",","."))||0;
   var dossier=type==="part"?200:150;
   var gestion=30;
   $("s-dossier").textContent=dossier+" € par véhicule ("+(type==="part"?"particulier":"professionnel de l’automobile")+")";
@@ -156,8 +159,20 @@ function render(){
     }
   }
 
+  var K=dossier+gestion+cg, p;
+  if(mode==="total"){
+    var t=num($("total").value);
+    var q=t-K-360;
+    p=q<=2400?q:(t-K)/1.15;
+    p=Math.round(p*100)/100;
+    $("prix").value=p>0?fmt(p,0):"";
+  }else{
+    p=num($("prix").value);
+  }
+
   if(p<=0){
-    ["prix","dossier","gestion","vente","total"].forEach(function(k){$("r-"+k).textContent="—"});
+    ["prix","dossier","gestion","vente"].forEach(function(k){$("r-"+k).textContent="—"});
+    if(mode==="prix") $("total").value="";
     return;
   }
   var vente=Math.max(360,p*0.15);
@@ -166,7 +181,7 @@ function render(){
   $("r-dossier").textContent=eur(dossier);
   $("r-gestion").textContent=eur(gestion);
   $("r-vente").textContent=eur(vente);
-  $("r-total").textContent=eur(p+dossier+gestion+vente+cg);
+  if(mode==="prix") $("total").value=fmt(p+K+vente,2);
 }
 function setType(t){
   type=t;
@@ -180,7 +195,8 @@ function setAge(a){
   $("b-old").setAttribute("aria-pressed",a==="old");
   render();
 }
-$("prix").addEventListener("input",render);
+$("prix").addEventListener("input",function(){mode="prix";render()});
+$("total").addEventListener("input",function(){mode="total";render()});
 $("cv").addEventListener("input",render);
 $("cg-on").addEventListener("change",render);
 sel.addEventListener("change",render);
