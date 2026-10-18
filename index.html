@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculateur de frais d’enchère</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--text:#16181d;--muted:#6b7280;--line:#e5e7eb;--accent:#2563eb;--accent-text:#fff;--total:#eef3ff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--card:#181b21;--text:#f2f3f5;--muted:#9aa1ad;--line:#2a2e36;--accent:#4c8dff;--accent-text:#0b0d11;--total:#1b2438;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1115;--card:#181b21;--text:#f2f3f5;--muted:#9aa1ad;--line:#2a2e36;--accent:#4c8dff;--accent-text:#0b0d11;--total:#1b2438;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+main{max-width:480px;margin:0 auto;padding:20px 16px 32px}
+h1{font-size:1.35rem;margin:8px 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
+.field{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;padding:0 14px;background:var(--bg)}
+.field input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font-size:1.6rem;font-weight:600;padding:12px 0;outline:none}
+.field span{color:var(--muted);font-size:1.3rem}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:12px;padding:12px 8px;font-size:.95rem;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row small{display:block;color:var(--muted);font-size:.78rem}
+.row b{white-space:nowrap}
+.total{background:var(--total);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;font-size:1.15rem;margin-top:8px}
+.total b{font-size:1.5rem}
+.hint{color:var(--muted);font-size:.8rem;margin:10px 2px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Calculateur de frais d’enchère</h1>
+
+<div class="card">
+<label for="prix">Prix de l’enchère (adjudication)</label>
+<div class="field"><input id="prix" type="text" inputmode="decimal" placeholder="0" autocomplete="off"><span>€</span></div>
+</div>
+
+<div class="card">
+<label>Type d’acheteur</label>
+<div class="seg">
+<button type="button" id="b-part" aria-pressed="true">Particulier</button>
+<button type="button" id="b-pro" aria-pressed="false">Professionnel auto</button>
+</div>
+</div>
+
+<div class="card">
+<div class="row"><div>Prix de l’enchère</div><b id="r-prix">—</b></div>
+<div class="row"><div>Frais de dossier<small id="s-dossier">200 € par véhicule</small></div><b id="r-dossier">—</b></div>
+<div class="row"><div>Frais de gestion et mise à disposition<small>30 € par véhicule</small></div><b id="r-gestion">—</b></div>
+<div class="row"><div>Frais de vente (TTC)<small id="s-vente">15 %, minimum 360 €</small></div><b id="r-vente">—</b></div>
+<div class="total"><span>Total</span><b id="r-total">—</b></div>
+<p class="hint">Jusqu’à 2 400 € d’adjudication : 360 € de frais de vente. Au-delà : 15 %.</p>
+</div>
+</main>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var type="part";
+var eur=function(n){return n.toLocaleString("fr-FR",{style:"currency",currency:"EUR"})};
+function render(){
+  var p=parseFloat(String($("prix").value).replace(/\s/g,"").replace(",","."))||0;
+  var dossier=type==="part"?200:150;
+  $("s-dossier").textContent=dossier+" € par véhicule ("+(type==="part"?"particulier":"professionnel")+")";
+  if(p<=0){["prix","dossier","gestion","vente","total"].forEach(function(k){$("r-"+k).textContent="—"});return}
+  var gestion=30;
+  var vente=Math.max(360,p*0.15);
+  $("s-vente").textContent=p<=2400?"Forfait minimum 360 €":"15 % de l’adjudication";
+  $("r-prix").textContent=eur(p);
+  $("r-dossier").textContent=eur(dossier);
+  $("r-gestion").textContent=eur(gestion);
+  $("r-vente").textContent=eur(vente);
+  $("r-total").textContent=eur(p+dossier+gestion+vente);
+}
+function setType(t){
+  type=t;
+  $("b-part").setAttribute("aria-pressed",t==="part");
+  $("b-pro").setAttribute("aria-pressed",t==="pro");
+  render();
+}
+$("prix").addEventListener("input",render);
+$("b-part").addEventListener("click",function(){setType("part")});
+$("b-pro").addEventListener("click",function(){setType("pro")});
+render();
+})();
+</script>
+</body>
+</html>
