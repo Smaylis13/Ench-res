@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Calculateur de frais d’enchère</title>
+<title>Simulateur de frais – Parcs Enchères</title>
 <style>
 :root{--bg:#f5f6f8;--card:#fff;--text:#16181d;--muted:#6b7280;--line:#e5e7eb;--accent:#2563eb;--accent-text:#fff;--total:#eef3ff;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -11,71 +11,162 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#0f1115;--card:#181b21;--text:#f2f3f5;--muted:#9aa1ad;--line:#2a2e36;--accent:#4c8dff;--accent-text:#0b0d11;--total:#1b2438;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
 main{max-width:480px;margin:0 auto;padding:20px 16px 32px}
-h1{font-size:1.35rem;margin:8px 0 18px}
+.brand{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:8px 0 4px}
+h1{font-size:1.35rem;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.85rem;margin:0 0 18px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
 label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
 .field{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;padding:0 14px;background:var(--bg)}
 .field input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font-size:1.6rem;font-weight:600;padding:12px 0;outline:none}
 .field span{color:var(--muted);font-size:1.3rem}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.seg button{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:12px;padding:12px 8px;font-size:.95rem;cursor:pointer}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.seg button{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:12px;padding:12px 8px;font-size:.92rem;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600}
+.chk{display:flex;gap:10px;align-items:center;color:var(--text);font-size:1rem;margin:0;cursor:pointer}
+.chk input{width:22px;height:22px;accent-color:var(--accent)}
+#cg-box{margin-top:14px}
+.in{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--text);font-size:1.1rem;padding:12px 14px;margin-bottom:12px}
 .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-.row:last-child{border-bottom:0}
 .row small{display:block;color:var(--muted);font-size:.78rem}
 .row b{white-space:nowrap}
 .total{background:var(--total);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;font-size:1.15rem;margin-top:8px}
 .total b{font-size:1.5rem}
 .hint{color:var(--muted);font-size:.8rem;margin:10px 2px 0}
+.hint a{color:var(--accent)}
 </style>
 </head>
 <body>
 <main>
-<h1>Calculateur de frais d’enchère</h1>
+<p class="brand">Parcs Enchères</p>
+<h1>Simulateur de frais d’adjudication</h1>
+<p class="sub">RN8, Z.I Saint Mitre, 13400 Aubagne</p>
 
 <div class="card">
-<label for="prix">Prix de l’enchère (adjudication)</label>
+<label for="prix">Prix d’adjudication (montant de l’enchère)</label>
 <div class="field"><input id="prix" type="text" inputmode="decimal" placeholder="0" autocomplete="off"><span>€</span></div>
 </div>
 
 <div class="card">
-<label>Type d’acheteur</label>
-<div class="seg">
+<label>Profil de l’adjudicataire</label>
+<div class="seg" style="margin-bottom:0">
 <button type="button" id="b-part" aria-pressed="true">Particulier</button>
-<button type="button" id="b-pro" aria-pressed="false">Professionnel auto</button>
+<button type="button" id="b-pro" aria-pressed="false">Professionnel auto (achat-revente)</button>
 </div>
 </div>
 
 <div class="card">
-<div class="row"><div>Prix de l’enchère</div><b id="r-prix">—</b></div>
+<label class="chk"><input type="checkbox" id="cg-on"> Ajouter la carte grise (optionnel)</label>
+<div id="cg-box" hidden>
+<label for="dep">Département d’immatriculation</label>
+<select id="dep" class="in"></select>
+<label for="cv">Puissance fiscale (CV)</label>
+<input id="cv" class="in" type="text" inputmode="numeric" value="6" autocomplete="off">
+<label>Âge du véhicule</label>
+<div class="seg" style="margin-bottom:8px">
+<button type="button" id="b-new" aria-pressed="true">Moins de 10 ans</button>
+<button type="button" id="b-old" aria-pressed="false">10 ans ou plus</button>
+</div>
+<p class="hint" id="cg-hint" style="margin-top:0"></p>
+</div>
+</div>
+
+<div class="card">
+<div class="row"><div>Prix d’adjudication</div><b id="r-prix">—</b></div>
 <div class="row"><div>Frais de dossier<small id="s-dossier">200 € par véhicule</small></div><b id="r-dossier">—</b></div>
-<div class="row"><div>Frais de gestion et mise à disposition<small>30 € par véhicule</small></div><b id="r-gestion">—</b></div>
+<div class="row"><div>Frais de gestion et de mise à disposition<small>30 € par véhicule</small></div><b id="r-gestion">—</b></div>
 <div class="row"><div>Frais de vente (TTC)<small id="s-vente">15 %, minimum 360 €</small></div><b id="r-vente">—</b></div>
-<div class="total"><span>Total</span><b id="r-total">—</b></div>
-<p class="hint">Jusqu’à 2 400 € d’adjudication : 360 € de frais de vente. Au-delà : 15 %.</p>
+<div class="row" id="row-cg" hidden><div>Carte grise<small id="s-cg"></small></div><b id="r-cg">—</b></div>
+<div class="total"><span>Total à prévoir</span><b id="r-total">—</b></div>
+<p class="hint">Adjudication jusqu’à 2 400 € : 360 € de frais de vente. Au-delà de 2 400 € : 15 % du prix d’adjudication.</p>
+<p class="hint" id="h-cg" hidden>Carte grise : estimation pour un véhicule d’occasion, hors malus CO₂ et taxe parafiscale. Tarifs du cheval fiscal 2026. Véhicule de 10 ans ou plus : taxe régionale divisée par deux.</p>
+<p class="hint">Simulation non contractuelle. Une question ? <a href="tel:+33442840738">(+33) 4 42 84 07 38</a></p>
 </div>
 </main>
 
 <script>
 (function(){
 var $=function(id){return document.getElementById(id)};
-var type="part";
+var type="part", age="new";
 var eur=function(n){return n.toLocaleString("fr-FR",{style:"currency",currency:"EUR"})};
+
+var R=[
+["Auvergne-Rhône-Alpes",43,"01 Ain|03 Allier|07 Ardèche|15 Cantal|26 Drôme|38 Isère|42 Loire|43 Haute-Loire|63 Puy-de-Dôme|69 Rhône|73 Savoie|74 Haute-Savoie"],
+["Bourgogne-Franche-Comté",60,"21 Côte-d’Or|25 Doubs|39 Jura|58 Nièvre|70 Haute-Saône|71 Saône-et-Loire|89 Yonne|90 Territoire de Belfort"],
+["Bretagne",60,"22 Côtes-d’Armor|29 Finistère|35 Ille-et-Vilaine|56 Morbihan"],
+["Centre-Val de Loire",60,"18 Cher|28 Eure-et-Loir|36 Indre|37 Indre-et-Loire|41 Loir-et-Cher|45 Loiret"],
+["Corse",53,"2A Corse-du-Sud|2B Haute-Corse"],
+["Grand Est",60,"08 Ardennes|10 Aube|51 Marne|52 Haute-Marne|54 Meurthe-et-Moselle|55 Meuse|57 Moselle|67 Bas-Rhin|68 Haut-Rhin|88 Vosges"],
+["Hauts-de-France",43,"02 Aisne|59 Nord|60 Oise|62 Pas-de-Calais|80 Somme"],
+["Île-de-France",68.95,"75 Paris|77 Seine-et-Marne|78 Yvelines|91 Essonne|92 Hauts-de-Seine|93 Seine-Saint-Denis|94 Val-de-Marne|95 Val-d’Oise"],
+["Normandie",60,"14 Calvados|27 Eure|50 Manche|61 Orne|76 Seine-Maritime"],
+["Nouvelle-Aquitaine",58,"16 Charente|17 Charente-Maritime|19 Corrèze|23 Creuse|24 Dordogne|33 Gironde|40 Landes|47 Lot-et-Garonne|64 Pyrénées-Atlantiques|79 Deux-Sèvres|86 Vienne|87 Haute-Vienne"],
+["Occitanie",59.5,"09 Ariège|11 Aude|12 Aveyron|30 Gard|31 Haute-Garonne|32 Gers|34 Hérault|46 Lot|48 Lozère|65 Hautes-Pyrénées|66 Pyrénées-Orientales|81 Tarn|82 Tarn-et-Garonne"],
+["Pays de la Loire",51,"44 Loire-Atlantique|49 Maine-et-Loire|53 Mayenne|72 Sarthe|85 Vendée"],
+["Provence-Alpes-Côte d’Azur",60,"04 Alpes-de-Haute-Provence|05 Hautes-Alpes|06 Alpes-Maritimes|13 Bouches-du-Rhône|83 Var|84 Vaucluse"],
+["Guadeloupe",41,"971 Guadeloupe"],
+["Martinique",53,"972 Martinique"],
+["Guyane",42.5,"973 Guyane"],
+["La Réunion",60,"974 La Réunion"],
+["Mayotte",30,"976 Mayotte"]
+];
+var D=[];
+R.forEach(function(r){r[2].split("|").forEach(function(s){
+  var i=s.indexOf(" ");
+  D.push({c:s.slice(0,i),n:s.slice(i+1),p:r[1],r:r[0]});
+})});
+var key=function(c){return c==="2A"?"19a":c==="2B"?"19b":c};
+D.sort(function(a,b){return key(a.c)<key(b.c)?-1:1});
+var sel=$("dep");
+D.forEach(function(d){
+  var o=document.createElement("option");
+  o.value=d.c;o.textContent=d.c+" – "+d.n;
+  sel.appendChild(o);
+});
+sel.value="13";
+
 function render(){
   var p=parseFloat(String($("prix").value).replace(/\s/g,"").replace(",","."))||0;
   var dossier=type==="part"?200:150;
-  $("s-dossier").textContent=dossier+" € par véhicule ("+(type==="part"?"particulier":"professionnel")+")";
-  if(p<=0){["prix","dossier","gestion","vente","total"].forEach(function(k){$("r-"+k).textContent="—"});return}
   var gestion=30;
+  $("s-dossier").textContent=dossier+" € par véhicule ("+(type==="part"?"particulier":"professionnel de l’automobile")+")";
+
+  var on=$("cg-on").checked, cg=0;
+  $("cg-box").hidden=!on;
+  $("row-cg").hidden=!on;
+  $("h-cg").hidden=!on;
+  if(on){
+    var d=D.filter(function(x){return x.c===sel.value})[0];
+    var cv=parseInt($("cv").value,10)||0;
+    var pf=d.p.toLocaleString("fr-FR");
+    var old=age==="old";
+    $("cg-hint").textContent=d.r+" : "+pf+" € par cheval fiscal"+(old?" (−50 % appliqué)":"");
+    if(cv>0){
+      var base=Math.round(cv*d.p*100)/100;
+      if(old) base=base/2;
+      var taxe=Math.ceil(Math.round(base*100)/100);
+      cg=taxe+11+2.76;
+      $("r-cg").textContent=eur(cg);
+      $("s-cg").textContent=cv+" CV × "+pf+" €"+(old?" ÷ 2":"")+" + 13,76 € de taxes fixes";
+    }else{
+      $("r-cg").textContent="—";
+      $("s-cg").textContent="Indique le nombre de CV";
+    }
+  }
+
+  if(p<=0){
+    ["prix","dossier","gestion","vente","total"].forEach(function(k){$("r-"+k).textContent="—"});
+    return;
+  }
   var vente=Math.max(360,p*0.15);
-  $("s-vente").textContent=p<=2400?"Forfait minimum 360 €":"15 % de l’adjudication";
+  $("s-vente").textContent=p<=2400?"Forfait minimum 360 €":"15 % du prix d’adjudication";
   $("r-prix").textContent=eur(p);
   $("r-dossier").textContent=eur(dossier);
   $("r-gestion").textContent=eur(gestion);
   $("r-vente").textContent=eur(vente);
-  $("r-total").textContent=eur(p+dossier+gestion+vente);
+  $("r-total").textContent=eur(p+dossier+gestion+vente+cg);
 }
 function setType(t){
   type=t;
@@ -83,9 +174,20 @@ function setType(t){
   $("b-pro").setAttribute("aria-pressed",t==="pro");
   render();
 }
+function setAge(a){
+  age=a;
+  $("b-new").setAttribute("aria-pressed",a==="new");
+  $("b-old").setAttribute("aria-pressed",a==="old");
+  render();
+}
 $("prix").addEventListener("input",render);
+$("cv").addEventListener("input",render);
+$("cg-on").addEventListener("change",render);
+sel.addEventListener("change",render);
 $("b-part").addEventListener("click",function(){setType("part")});
 $("b-pro").addEventListener("click",function(){setType("pro")});
+$("b-new").addEventListener("click",function(){setAge("new")});
+$("b-old").addEventListener("click",function(){setAge("old")});
 render();
 })();
 </script>
